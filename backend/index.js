@@ -1,13 +1,18 @@
-const express = require('express');
-const app = express();
-// const path = require('path');
-const mongoose = require('mongoose');
-// const methodOverride = require('method-override')
+require("dotenv").config();
+const nodemailer = require("nodemailer");
+const express = require("express");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const session = require("express-session");
+const passport = require("passport");
+const upload = require("express-fileupload");
+const { User, JobApplicant, Recruiter, Job } = require("./schemas/schema");
+// require("./schemas/dummyJobs.js");
+const cors = require("cors");
+var LocalStorage = require("node-localstorage").LocalStorage,
+  localStorage = new LocalStorage("./scratch");
 
-
-// const Product = require('./models/product');
-
-mongoose.connect('mongodb://localhost:27017/farmStand', { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect('mongodb://localhost:27017/userTestDB', { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
         console.log("MONGO CONNECTION OPEN!!!")
     })
@@ -16,65 +21,44 @@ mongoose.connect('mongodb://localhost:27017/farmStand', { useNewUrlParser: true,
         console.log(err)
     })
 
-app.get('/products', (req, res) => {
-    console.log('hello!');
-})
+passport.use(User.createStrategy());
 
-// app.set('views', path.join(__dirname, 'views'));
-// app.set('view engine', 'ejs');
+passport.serializeUser(function (user, done) {
+  done(null, user.id);
+});
 
-// app.use(express.urlencoded({ extended: true }));
-// app.use(methodOverride('_method'))
+passport.deserializeUser(function (id, done) {
+  User.findById(id, function (err, user) {
+    done(err, user);
+  });
+});
 
-// const categories = ['fruit', 'vegetable', 'dairy'];
+const app = express();
+app.use(upload());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(
+  cors({
+    origin: ["http://localhost:3000"],
+    methods: ["GET", "POST"],
+    credentials: true,
+  })
+);
+app.use(
+  session({
+    secret: "Our little secret",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
-// app.get('/products', async (req, res) => {
-//     const { category } = req.query;
-//     if (category) {
-//         const products = await Product.find({ category })
-//         res.render('products/index', { products, category })
-//     } else {
-//         const products = await Product.find({})
-//         res.render('products/index', { products, category: 'All' })
-//     }
-// })
+app.get("/", function (req, res) {
+    res.send("Server is up and running");
+  });
 
-// app.get('/products/new', (req, res) => {
-//     res.render('products/new', { categories })
-// })
+app.use(passport.initialize());
+app.use(passport.session());
 
-// app.post('/products', async (req, res) => {
-//     const newProduct = new Product(req.body);
-//     await newProduct.save();
-//     res.redirect(`/products/${newProduct._id}`)
-// })
-
-// app.get('/products/:id', async (req, res) => {
-//     const { id } = req.params;
-//     const product = await Product.findById(id)
-//     res.render('products/show', { product })
-// })
-
-// app.get('/products/:id/edit', async (req, res) => {
-//     const { id } = req.params;
-//     const product = await Product.findById(id);
-//     res.render('products/edit', { product, categories })
-// })
-
-// app.put('/products/:id', async (req, res) => {
-//     const { id } = req.params;
-//     const product = await Product.findByIdAndUpdate(id, req.body, { runValidators: true, new: true });
-//     res.redirect(`/products/${product._id}`);
-// })
-
-// app.delete('/products/:id', async (req, res) => {
-//     const { id } = req.params;
-//     const deletedProduct = await Product.findByIdAndDelete(id);
-//     res.redirect('/products');
-// })
-
-
-
-app.listen(3000, () => {
-    console.log("APP IS LISTENING ON PORT 3000!")
-})
+app.listen(8080, function () {
+    console.log("Server started on port 8080");
+  });
