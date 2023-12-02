@@ -56,6 +56,8 @@ app.get("/", function (req, res) {
     res.send("Server is up and running");
   });
 
+
+
 app.use(passport.initialize());
 app.use(passport.session());
 
