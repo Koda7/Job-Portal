@@ -124,6 +124,18 @@ app.get("/myApplications", (req, res) => {
   }
 });
 
+app.post("/updateUserInfo", (req, res) => {
+  let chosenModel = Recruiter;
+  if (req.body.type == "JA") chosenModel = JobApplicant;
+  chosenModel
+    .updateOne({ _id: req.body.userInfo._id }, req.body.userInfo)
+    .exec()
+    .then((foundUser) => res.send("OK"))
+    .catch((err) => {
+      console.log(err), res.sendStatus(400);
+    });
+});
+
 
 app.use(passport.initialize());
 app.use(passport.session());
