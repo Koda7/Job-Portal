@@ -56,6 +56,73 @@ app.get("/", function (req, res) {
     res.send("Server is up and running");
   });
 
+app.get("/registerType/:profileType", (req, res) => {
+    localStorage.setItem("type", req.params.profileType);
+    res.redirect("/auth/google");
+  });
+  
+app.get("/currUser", function (req, res) {
+  if (!req.isAuthenticated()) res.sendStatus(401);
+  else {
+    let currUser = req.user;
+    if (req.user.type === "JA") {
+      JobApplicant.findOne({ userId: req.user._id }, function (err, userInfo) {
+        if (err) res.json();
+        if (userInfo) {
+          currUserInfo = userInfo;
+          res.json({ currUser, currUserInfo });
+        }
+      });
+    } else {
+      Recruiter.findOne({ userId: req.user._id }, function (err, userInfo) {
+        if (err) res.json();
+        if (userInfo) {
+          currUserInfo = userInfo;
+          res.json({ currUser, currUserInfo });
+        }
+      });
+    }
+  }
+});
+
+app.get("/logout", function (req, res) {
+  req.logout();
+  res.send("Logout Successful");
+});
+
+app.get("/jobs", function (req, res) {
+  Job.find({}, function (err, foundJobs) {
+    if (err) {
+      console.log(err);
+      res.json({ jobs: [] });
+    } else {
+      res.json({ jobs: foundJobs });
+    }
+  });
+});
+
+app.get("/isLoggedIn", function (req, res) {
+  if (req.isAuthenticated()) res.send("Yes");
+  else res.send("No");
+});
+  
+app.get("/myApplications", (req, res) => {
+  if (typeof req.user === "undefined") res.sendStatus(401);
+  else {
+    userId = req.user._id;
+    Job.find(
+      { appliedBy: { $elemMatch: { id: userId } } },
+      function (err, foundJobs) {
+        if (err) {
+          console.log(err);
+          res.sendStatus(400);
+        } else {
+          res.json({ foundJobs });
+        }
+      }
+    );
+  }
+});
 
 
 app.use(passport.initialize());
