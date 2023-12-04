@@ -296,6 +296,106 @@ app.post("/myJobs", async (req, res) => {
   }
 });
 
+app.post("/updateJob", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  else {
+    try {
+      updatedJob = req.body.job;
+      await Job.updateOne({ _id: updatedJob._id }, updatedJob);
+      res.send("Success");
+    } catch (err) {
+      console.log(err);
+      res.sendStatus(400);
+    }
+  }
+});
+
+app.post("/deleteJob", async (req, res) => {
+  try {
+    if (req.isAuthenticated()) {
+      const jobId = req.body.job._id;
+      const appliedUsers = req.body.job.appliedBy;
+      await appliedUsers.forEach((user) => {
+        JobApplicant.updateMany(
+          { userId: user.id },
+          { $pull: { appliedJobs: jobId } },
+          function (err, user) {
+            if (err) console.log(err);
+          }
+        );
+      });
+      const gotUsers = req.body.job.gotBy;
+      await gotUsers.forEach((id) => {
+        JobApplicant.updateMany(
+          { userId: id },
+          { $set: { foundJob: false } },
+          function (err, user) {
+            if (err) console.log(err);
+          }
+        );
+      });
+      await Recruiter.findOneAndUpdate(
+        { listedJobs: jobId },
+        { $pull: { listedJobs: jobId } },
+        { useFindAndModify: false }
+      );
+      await Job.deleteOne({ _id: jobId });
+      res.send("Success");
+    } else {
+      res.sendStatus(401);
+    }
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(400);
+  }
+});
+
+app.post("/jobApplicants", async (req, res) => {
+  try {
+    if (req.isAuthenticated()) {
+      const applicants = req.body.jobApplicants;
+      let applicantsId = [];
+      applicants.forEach((applicant) => {
+        applicantsId.push(applicant.id);
+      });
+      let applicantsInfo = await JobApplicant.find({
+        userId: { $in: applicantsId },
+      });
+      res.json({ applicantsInfo });
+    } else {
+      res.sendStatus(401);
+    }
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(400);
+  }
+});
+
+const sendEmail = (userEmail, jobTitle) => {
+  var transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "dass.sample.email@gmail.com",
+      pass: "dassassignment1",
+    },
+  });
+
+  var mailOptions = {
+    from: "dass.sample.email@gmail.com",
+    to: userEmail,
+    subject: "U have been accepted to the job!!",
+    text: "Ur job application has been accepted for the job " + jobTitle,
+  };
+
+  transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Email sent");
+    }
+  });
+};
+
 app.use(passport.initialize());
 app.use(passport.session());
 
