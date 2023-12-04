@@ -136,6 +136,165 @@ app.post("/updateUserInfo", (req, res) => {
     });
 });
 
+app.post("/getFile", (req, res) => {
+  if (typeof req.user === "undefined") res.sendStatus(401);
+  else res.download(__dirname + "/uploads/" + req.user._id + req.body.filename);
+});
+
+app.post("/getFile2", (req, res) => {
+  if (typeof req.user === "undefined") res.sendStatus(401);
+  else res.download(__dirname + "/uploads/" + req.body.filename);
+});
+
+app.post("/storeFile", function (req, res) {
+  if (req.files) {
+    var file = req.files.file;
+    var filename = file.name.replace(/ /g, "");
+    file.mv("./uploads/" + req.user._id + filename, (err) => {
+      if (err) {
+        res.send(err);
+      } else {
+        res.send("File Uploded");
+        let path = __dirname + "/uploads/" + req.user._id + filename;
+        let obj = {
+          resumePath: filename,
+        };
+        if (req.body.type === "Image")
+          obj = {
+            ImagePath: filename,
+          };
+        JobApplicant.updateOne(
+          { userId: req.user._id },
+          obj,
+          function (err, foundUser) {
+            if (err) {
+              console.log(err);
+            }
+          }
+        );
+      }
+    });
+  }
+});
+
+app.post("/register", function (req, res) {
+  User.register(
+    { username: req.body.username, type: req.body.profileType },
+    req.body.password,
+    function (err, user) {
+      if (err) {
+        console.log(err);
+        res.send(err);
+      } else {
+        req.login(user, function (err) {
+          if (err) console.log(err);
+          else {
+            passport.authenticate("local")(req, res, function () {
+              console.log("LoggedIn");
+            });
+          }
+        });
+        let chosenModel;
+        if (user.type === "JA") chosenModel = JobApplicant;
+        else chosenModel = Recruiter;
+        const temp = new chosenModel({
+          userId: user._id,
+        });
+        temp.save(function (err) {
+          if (err) {
+            res.send("Failed to register");
+          } else res.send("Success");
+        });
+      }
+    }
+  );
+});
+
+app.post("/login", function (req, res) {
+  const user = new User({
+    username: req.body.username,
+    password: req.body.password,
+  });
+  req.login(user, function (err) {
+    if (err) {
+      console.log(err);
+      res.send("Failed");
+    } else {
+      passport.authenticate("local")(req, res, function () {
+        res.send("Success");
+      });
+    }
+  });
+});
+
+app.post("/applyToJob", async (req, res) => {
+  try {
+    let dateOfApplication = new Date(Date.now());
+    let dateString = dateOfApplication.toISOString();
+    const userApplied = {
+      id: req.body.userId,
+      SOP: req.body.jobSOP,
+      status: "Applied",
+      dateOfApplication: dateString,
+    };
+    let user = await JobApplicant.findOne({ userId: req.body.userId });
+    if (user.foundJob) {
+      res.send("Already Accepted in another Job!");
+      return;
+    }
+    const appliedTo = req.body.jobId;
+    let job = await Job.findById(appliedTo);
+    if (job.appliedBy.length == job.maxApp || job.gotBy.length == job.numPos) {
+      res.send(" The job is already full");
+    } else {
+      job.appliedBy.push(userApplied);
+      await job.save();
+      await JobApplicant.updateOne(
+        { userId: req.body.userId },
+        { $push: { appliedJobs: appliedTo } },
+        { useFindAndModify: false }
+      );
+      res.send("Success");
+    }
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(400);
+  }
+});
+
+app.post("/addJob", async (req, res) => {
+  if (!req.isAuthenticated()) res.sendStatus(401);
+  else {
+    let userId = req.body.id;
+    delete req.body["id"];
+    try {
+      const newJob = new Job(req.body);
+      let user = await newJob.save();
+      await Recruiter.updateOne(
+        { userId },
+        { $push: { listedJobs: user._id } }
+      );
+      res.send(user._id);
+    } catch (err) {
+      console.log(err);
+      res.sendStatus(400);
+    }
+  }
+});
+
+app.post("/myJobs", async (req, res) => {
+  if (!req.isAuthenticated()) res.sendStatus(401);
+  else {
+    try {
+      const jobList = req.body.listOfJobs;
+      let foundJobs = await Job.find({ _id: { $in: jobList } });
+      res.json({ foundJobs });
+    } catch (err) {
+      console.log(err);
+      res.sendStatus(500).send("Failed to Read Database");
+    }
+  }
+});
 
 app.use(passport.initialize());
 app.use(passport.session());
