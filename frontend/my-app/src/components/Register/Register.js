@@ -5,11 +5,23 @@ import axios from "axios";
 import { makeStyles } from "@material-ui/core/styles";
 import { FaGoogle } from "react-icons/fa";
 import swal from "sweetalert";
-import { Box, Grid, TextField, Container, Button } from "@material-ui/core/";
+import {
+  Box,
+  Grid,
+  TextField,
+  FormControlLabel,
+  RadioGroup,
+  Radio,
+  Container,
+  FormControl,
+  FormHelperText,
+  Button,
+} from "@material-ui/core/";
 const useStyles = makeStyles((theme) => ({
   root: {
     height: "100%",
-    backgroundImage: "white",
+    // backgroundImage: "linear-gradient(315deg, #fbb034 0%, #ffdd00 74%)",
+    backgroundColor: "white",
   },
   container: {
     alignItems: "center",
@@ -30,19 +42,23 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Login = (props) => {
+const Register = (props) => {
   const classes = useStyles();
-  const [loginInfo, setloginInfo] = useState({
+  const [profileInfo, setProfileInfo] = useState({
+    profileType: "",
     username: "",
     password: "",
   });
-  const [gotResponse, setGotResponse] = useState(false);
-  const [isUserEmpty, setUserEmpty] = useState(false);
-  const [isPassEmpty, setPassEmpty] = useState(false);
+  const [areFieldsEmpty, setFields] = useState({
+    profileType: false,
+    username: false,
+    password: false,
+  });
+  const [passwordError, setPasswordError] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
-    setloginInfo((prevValues) => {
+    setProfileInfo((prevValues) => {
       return {
         ...prevValues,
         [name]: value,
@@ -50,43 +66,62 @@ const Login = (props) => {
     });
   }
 
-  function googleSignIn() {
-    window.location.href = "http://localhost:8080/auth/google";
+  function googleSignUp() {
+    setFields((prevValues) => {
+      return {
+        ...prevValues,
+        profileType: profileInfo.profileType === "" ? true : false,
+      };
+    });
+    if (profileInfo.profileType === "") return;
+    // window.location.href = "http://localhost:8080/auth/google";
+    let path = "http://localhost:8080/registerType/" + profileInfo.profileType;
+    window.location.href = path;
   }
 
   function addUser() {
-    if (loginInfo.username === "") setUserEmpty(true);
-    else setUserEmpty(false);
-    if (loginInfo.password === "") setPassEmpty(true);
-    else setPassEmpty(false);
-    if (loginInfo.username === "" || loginInfo.password === "") return;
+    setFields((prevValues) => {
+      return {
+        username: profileInfo.username === "" ? true : false,
+        password: profileInfo.password === "" ? true : false,
+        profileType: profileInfo.profileType === "" ? true : false,
+      };
+    });
+    if (
+      profileInfo.username === "" ||
+      profileInfo.password === "" ||
+      profileInfo.profileType === "" ||
+      passwordError
+    )
+      return;
     axios({
       method: "post",
-      url: "http://localhost:8080/login",
+      url: "http://localhost:8080/register",
       headers: { "Content-Type": "application/json" },
-      data: loginInfo,
+      data: profileInfo,
     })
       .then((response) => {
         if (response.data === "Success") {
-          props.history.push("/user");
+          props.history.push("/registerInfo");
         } else {
           swal({
-            title: "Login Failed!",
+            title: "Registration Failed",
             icon: "error",
           });
           console.log(response.data);
-          props.history.push("/login");
+          props.history.push("/register");
         }
       })
       .catch((err) => {
         console.log(err);
         swal({
-          title: "Login Failed!",
+          title: "Registration Failed",
           icon: "error",
         });
-        props.history.push("/login");
+        props.history.push("/register");
       });
   }
+  const [gotResponse, setGotResponse] = useState(false);
   axios.defaults.withCredentials = true;
   axios
     .get("http://localhost:8080/isLoggedIn")
@@ -99,10 +134,10 @@ const Login = (props) => {
     return (
       <Box className={classes.root}>
         <NavBar />
+
         <Container
           maxwidth='xs'
           style={{
-            height: "100%",
             width: 500,
             maxWidth: "100%",
             alignItems: "center",
@@ -111,31 +146,71 @@ const Login = (props) => {
           }}
         >
           <Grid container className={classes.container}>
-            <h1 className={classes.heading}>Login</h1>
+            <h1 className={classes.heading}>Register</h1>
+            <Grid item xs={12} className={classes.field}>
+              <FormControl
+                error={areFieldsEmpty.profileType}
+                style={{ alignItems: "center" }}
+              >
+                <RadioGroup
+                  row
+                  style={{ justifyContent: "center" }}
+                  name='profileType'
+                  value={profileInfo.profileType}
+                  onChange={handleChange}
+                >
+                  <FormControlLabel
+                    value='JA'
+                    control={<Radio />}
+                    label='Job Applicant'
+                  />
+                  <FormControlLabel
+                    value='R'
+                    control={<Radio />}
+                    label='Recruiter'
+                  />
+                </RadioGroup>
+                {areFieldsEmpty.profileType ? (
+                  <FormHelperText>Please Select Type</FormHelperText>
+                ) : null}
+              </FormControl>
+            </Grid>
             <Grid item xs={12} className={classes.field}>
               <TextField
-                error={isUserEmpty}
+                error={areFieldsEmpty.username}
                 inputProps={{
                   autoComplete: "new-password",
                 }}
                 className={classes.input}
                 name='username'
                 label='Username'
-                value={loginInfo.username}
+                value={profileInfo.username}
                 onChange={handleChange}
                 helperText='Please Enter username'
               ></TextField>
             </Grid>
             <Grid item xs={12} className={classes.field}>
               <TextField
-                error={isPassEmpty}
+                error={areFieldsEmpty.password}
                 className={classes.input}
                 name='password'
                 label='Password'
-                value={loginInfo.password}
+                value={profileInfo.password}
                 type='password'
                 onChange={handleChange}
                 helperText='Please Enter Password'
+              ></TextField>
+            </Grid>
+            <Grid item xs={12} className={classes.field}>
+              <TextField
+                error={passwordError}
+                className={classes.input}
+                label='Confrim Password'
+                type='password'
+                onChange={(e) =>
+                  setPasswordError(e.target.value !== profileInfo.password)
+                }
+                helperText={passwordError ? "Passwords don't match" : null}
               ></TextField>
             </Grid>
             <Grid item xs={12}>
@@ -154,7 +229,7 @@ const Login = (props) => {
               </Button>
 
               <Button
-                onClick={googleSignIn}
+                onClick={googleSignUp}
                 style={{
                   width: "100%",
                   paddingTop: "1rem",
@@ -179,4 +254,4 @@ const Login = (props) => {
   else return <div>Loading...</div>;
 };
 
-export default Login;
+export default Register;
