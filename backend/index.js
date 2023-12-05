@@ -396,6 +396,133 @@ const sendEmail = (userEmail, jobTitle) => {
   });
 };
 
+app.post("/setStatus", async (req, res) => {
+  let dateOfJoining = new Date(Date.now());
+  let dateString = dateOfJoining.toISOString();
+  try {
+    if (req.isAuthenticated()) {
+      const { jobId, applicationId } = req.body;
+      let job = await Job.findById(jobId);
+      const title = job.title;
+      let newApplications = job.appliedBy.map((application) => {
+        if (application._id == applicationId) {
+          if (application.status == "Rejected") {
+            res.send("Applicant has taken Job elsewhere");
+            return;
+          }
+          application.status = req.body.status;
+          if (req.body.status === "Accepted")
+            application.dateOfJoining = dateString;
+        }
+        return application;
+      });
+      if (req.body.status === "Accepted") {
+        job.gotBy.push(req.body.userId);
+        let user = await JobApplicant.findOne({ userId: req.body.userId });
+        user.foundJob = true;
+        await user.save();
+        const userEmail = user.email;
+        const appliedJobs = user.appliedJobs;
+        await Job.find({ _id: { $in: appliedJobs } }, (err, foundJobs) => {
+          if (err) console.log(err);
+          if (foundJobs) {
+            foundJobs.forEach((job) => {
+              let newAppliedBy = job.appliedBy.map((application) => {
+                if (application.id === req.body.userId) {
+                  application.status = "Rejected";
+                }
+                return application;
+              });
+              job.appliedBy = newAppliedBy;
+              job.save();
+            });
+          }
+        });
+        if (userEmail) sendEmail(userEmail, job.title);
+      }
+      job.appliedBy = newApplications;
+      await job.save();
+
+      res.send("Success");
+    } else res.sendStatus(401);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+});
+
+app.post("/employeeInfo", async (req, res) => {
+  try {
+    if (req.isAuthenticated()) {
+      let jobList = req.body.jobList;
+      let jobs = await Job.find(
+        { _id: { $in: jobList } },
+        { title: 1, jobType: 1, appliedBy: 1, _id: 0, gotBy: 1 }
+      );
+      let employees = [];
+      for (let i = 0; i < jobs.length; i++) {
+        let title = jobs[i].title;
+        let jobType = jobs[i].jobType;
+        for (let j = 0; j < jobs[i].appliedBy.length; j++) {
+          if (jobs[i].appliedBy[j].status === "Accepted") {
+            let dateOfJoining = jobs[i].appliedBy[j].dateOfJoining;
+            let user = await JobApplicant.find({
+              userId: jobs[i].appliedBy[j].id,
+            });
+            let name = user[0].name;
+            let rating = user[0].rating;
+            employees.push({
+              name,
+              title,
+              dateOfJoining,
+              jobType,
+              rating,
+              userId: jobs[i].appliedBy[j].id,
+            });
+          }
+        }
+      }
+      res.json({ employees });
+    } else {
+      res.sendStatus(401);
+    }
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(400);
+  }
+});
+
+app.post("/updateRating", async (req, res) => {
+  try {
+    const { userId, newRating } = req.body;
+    await JobApplicant.updateOne({ userId }, { rating: newRating });
+    res.send("Success");
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(400);
+  }
+});
+
+app.post("/updateJobRating", async (req, res) => {
+  let dateOfJoining = new Date(Date.now());
+  let dateString = dateOfJoining.toISOString();
+  try {
+    const { jobId, userId, rating } = req.body;
+    let job = await Job.findById(jobId);
+    let newApplications = job.appliedBy.map((application) => {
+      if (application.id === userId) application.rating = rating;
+
+      return application;
+    });
+    job.appliedBy = newApplications;
+    await job.save();
+    res.send("Success");
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+});
+
 app.use(passport.initialize());
 app.use(passport.session());
 
