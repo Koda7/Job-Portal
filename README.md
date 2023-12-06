@@ -22,7 +22,7 @@ Ensure you have the following installed on your local machine:
 
 ### Steps
 
-1. Open the terminal in the backend and frontend folders separately.
+1. Open the terminal in the backend and frontend/my-app folders separately.
 2. Run the following command in each folder to install dependencies:
 ```
 npm install
