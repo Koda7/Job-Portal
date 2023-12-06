@@ -8,14 +8,13 @@ import RegisterInfo from "./RegisterInfo/RegisterInfo.js";
 import { RiH1 } from "react-icons/ri";
 const App = () => {
   return (
-    // <Router>
-    //   <Route exact path='/' component={Home} />
-    //   <Route exact path='/login' component={Login} />
-    //   <Route exact path='/register' component={Register} />
-    //   <Route exact path='/user' component={LoggedIn} />
-    //   <Route exact path='/registerInfo' component={RegisterInfo} />
-    <h1>hello!</h1>
-    // </Router>
+    <Router>
+      <Route exact path='/' component={Home} />
+      <Route exact path='/login' component={Login} />
+      <Route exact path='/register' component={Register} />
+      <Route exact path='/user' component={LoggedIn} />
+      <Route exact path='/registerInfo' component={RegisterInfo} />
+    </Router>
   );
 };
 
