@@ -5,7 +5,7 @@ import Login from "./Login/Login.js";
 import Register from "./Register/Register.js";
 import LoggedIn from "./LoggedIn/Loggedin.js";
 import RegisterInfo from "./RegisterInfo/RegisterInfo.js";
-import { RiH1 } from "react-icons/ri";
+// import { RiH1 } from "react-icons/ri";
 const App = () => {
   return (
     <Router>
