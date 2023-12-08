@@ -530,3 +530,15 @@ class ViewJobs extends React.Component {
       </Grid>
     );
   }
+
+  displayJobs() {
+    this.state.jobs.sort(
+      (a, b) =>
+        (a[this.state.sortChoice] - b[this.state.sortChoice]) *
+        parseInt(this.state.order)
+    );
+    const options = {
+      shouldSort: false,
+      useExtendedSearch: true,
+      keys: ["title"],
+    };
