@@ -296,3 +296,105 @@ class ViewJobs extends React.Component {
       </Grid>
     );
   }
+
+  applyToJob(jobId) {
+    axios.defaults.withCredentials = true;
+    axios
+      .get("http://localhost:8080/isLoggedIn")
+      .then((response) => {
+        if (response.data !== "Yes") {
+          this.props.history.push("/login");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        this.props.history.push("/login");
+      });
+    axios
+      .get("http://localhost:8080/jobs")
+      .then((response) => {
+        let count = 0;
+        for (let i = 0; i < response.data.jobs.length; i++) {
+          let job = response.data.jobs[i];
+          for (let j = 0; j < job.appliedBy.length; j++) {
+            if (
+              job.appliedBy[j].id === this.props.user._id &&
+              job.appliedBy[j].status !== "Rejected"
+            )
+              count++;
+          }
+        }
+        console.log(count);
+        if (count < 10) {
+          this.setState({
+            openDialog: true,
+          });
+          this.applyingToJob = jobId;
+        } else {
+          swal({
+            title: "Applications limit reached",
+            icon: "error",
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        this.props.history.push("/login");
+      });
+  }
+
+  canApply(job, jobId) {
+    let returnButton = false;
+    for (let i = 0; i < job.appliedBy.length; i++) {
+      if (job.appliedBy[i].id === this.state.currUser._id) returnButton = true;
+    }
+    if (!returnButton)
+      if (
+        job.appliedBy.length === job.maxApp ||
+        job.gotBy.length === job.numPos
+      )
+        return (
+          <Button
+            variant='contained'
+            style={{
+              backgroundColor: "#ff0000",
+              color: "white",
+              fontWeight: "bold",
+              width: 120,
+              fontSize: "1.2rem",
+            }}
+            disabled
+          >
+            Full
+          </Button>
+        );
+      else
+        return (
+          <Button
+            color='primary'
+            id='applyButton'
+            variant='contained'
+            onClick={() => this.applyToJob(jobId)}
+            style={{ fontWeight: "bold", width: 120, fontSize: "1.2rem" }}
+          >
+            Apply
+          </Button>
+        );
+    else {
+      return (
+        <Button
+          disabled
+          variant='contained'
+          style={{
+            backgroundColor: "#4BCA81",
+            color: "white",
+            fontWeight: "bold",
+            width: 120,
+            fontSize: "1.2rem",
+          }}
+        >
+          Applied
+        </Button>
+      );
+    }
+  }
