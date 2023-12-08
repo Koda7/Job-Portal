@@ -398,3 +398,135 @@ class ViewJobs extends React.Component {
       );
     }
   }
+
+  titleCase(str) {
+    var splitStr = str.toLowerCase().split(" ");
+    for (let i = 0; i < splitStr.length; i++) {
+      splitStr[i] =
+        splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+    }
+    return splitStr.join(" ");
+  }
+
+  displayJob(job) {
+    let durationString = "Indefinite";
+    if (job.duration === 1) durationString = "1 month";
+    else if (job.duration >= 2) durationString = job.duration + " months";
+    var dateFormat = require("dateformat");
+    let deadlineDate = new Date(job.deadlineDate);
+    const deadlineString = dateFormat(
+      deadlineDate,
+      "dddd, mmmm dS, yyyy, h:MM TT"
+    );
+    return (
+      <Grid
+        key={job._id}
+        container
+        style={{
+          width: "100%",
+          paddingTop: "1rem",
+          paddingLeft: "2rem",
+          paddingRight: "2rem",
+        }}
+      >
+        <Paper
+          style={{
+            width: "100%",
+            paddingTop: "1rem",
+            paddingLeft: "2rem",
+            paddingBottom: "1rem",
+          }}
+        >
+          <Grid
+            container
+            style={{
+              width: "100%",
+              paddingTop: "1rem",
+              paddingLeft: "2rem",
+              paddingBottom: "1rem",
+            }}
+          >
+            <Grid item xs={9}>
+              <Grid
+                container
+                direction='column'
+                style={{
+                  width: "100%",
+                }}
+              >
+                {" "}
+                <Grid item xs={10}>
+                  <div style={classes.jobTitle}>
+                    {this.titleCase(job.title)}
+                  </div>{" "}
+                  <div style={classes.jobRating}>
+                    <Rating
+                      name='rating'
+                      defaultValue={job.rating}
+                      precision={0.1}
+                      readOnly
+                    />
+                  </div>
+                </Grid>
+                <Grid item>
+                  <div
+                    style={{
+                      marginLeft: "0.5rem",
+                      marginBottom: "0.5rem",
+                      fontSize: "1.2rem",
+                      fontFamily: "'Rosario', sans-serif",
+                    }}
+                  >
+                    {job.salary === 0 ? "Unpaid" : `₹ ${job.salary} /- month`}
+                  </div>
+                </Grid>
+                <Grid item>
+                  <InputLabel
+                    style={{
+                      marginLeft: "0.5rem",
+                      fontSize: "1rem",
+                      display: "inline",
+                    }}
+                  >
+                    By {this.titleCase(job.recruiterName)},
+                  </InputLabel>
+                  <InputLabel
+                    style={{
+                      display: "inline",
+                      marginLeft: "0.5rem",
+                      fontSize: "1.2rem",
+                      fontFamily: "'Baloo Thambi 2', cursivef",
+                    }}
+                  >
+                    {durationString}
+                  </InputLabel>
+                </Grid>
+                <Grid item style={{ marginTop: "0.5rem" }}>
+                  <InputLabel
+                    style={{
+                      marginLeft: "0.5rem",
+                      fontSize: "1rem",
+                      display: "inline",
+                    }}
+                  >
+                    <ImStopwatch /> {deadlineString}
+                  </InputLabel>
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid item xs={3}>
+              <Grid
+                container
+                align='center'
+                justify='center'
+                alignItems='center'
+                style={{ height: "100%" }}
+              >
+                {this.canApply(job, job._id)}
+              </Grid>
+            </Grid>
+          </Grid>
+        </Paper>
+      </Grid>
+    );
+  }
