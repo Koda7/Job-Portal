@@ -553,31 +553,31 @@ class ViewJobs extends React.Component {
       final.forEach((job) => finalJobs.push(job.item));
       final = finalJobs;
     }
-//     const [minSal, maxSal] = this.state.filterSalary;
-//     return final
-//       .filter((job) => new Date(job.deadlineDate) >= new Date())
-//       .filter((job) => job.duration < this.state.filterDuration)
-//       .filter((job) => job.salary <= maxSal && job.salary >= minSal)
-//       .filter((job) =>
-//         this.state.filterType === "None"
-//           ? true
-//           : job.jobType === this.state.filterType
-//       )
-//       .map((job) => {
-//         return this.displayJob(job);
-//       });
-//   }
-//   handleChange(event) {
-//     if (this._isMounted)
-//       this.setState({
-//         ...this.state,
-//         [event.target.name]: event.target.value,
-//       });
-//   }
-//   handleSlider(event, newValue) {
-//     if (this._isMounted)
-//       this.setState({
-//         ...this.state,
-//         filterSalary: newValue,
-//       });
-//   }
+    const [minSal, maxSal] = this.state.filterSalary;
+    return final
+      .filter((job) => new Date(job.deadlineDate) >= new Date())
+      .filter((job) => job.duration < this.state.filterDuration)
+      .filter((job) => job.salary <= maxSal && job.salary >= minSal)
+      .filter((job) =>
+        this.state.filterType === "None"
+          ? true
+          : job.jobType === this.state.filterType
+      )
+      .map((job) => {
+        return this.displayJob(job);
+      });
+  }
+  handleChange(event) {
+    if (this._isMounted)
+      this.setState({
+        ...this.state,
+        [event.target.name]: event.target.value,
+      });
+  }
+  handleSlider(event, newValue) {
+    if (this._isMounted)
+      this.setState({
+        ...this.state,
+        filterSalary: newValue,
+      });
+  }
