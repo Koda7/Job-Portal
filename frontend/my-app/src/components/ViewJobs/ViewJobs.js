@@ -581,149 +581,149 @@ class ViewJobs extends React.Component {
         filterSalary: newValue,
       });
   }
-  render() {
-    if (this.state.jobs.length === 0)
-      return <h1 style={classes.heading}>Loading...</h1>;
-    else
-      return (
-        <Container style={{ width: "100vw", padding: 0, maxWidth: 1400 }}>
-          <h1 style={classes.heading}>View Jobs</h1>
-          <Grid container spacing={3} justify='flex-end'>
-            <Grid item xs={3}>
-              <Paper elevation={3} style={{ padding: "0rem" }}>
-                <div style={classes.sfheading}>Sort and Filter</div>
+//   render() {
+//     if (this.state.jobs.length === 0)
+//       return <h1 style={classes.heading}>Loading...</h1>;
+//     else
+//       return (
+//         <Container style={{ width: "100vw", padding: 0, maxWidth: 1400 }}>
+//           <h1 style={classes.heading}>View Jobs</h1>
+//           <Grid container spacing={3} justify='flex-end'>
+//             <Grid item xs={3}>
+//               <Paper elevation={3} style={{ padding: "0rem" }}>
+//                 <div style={classes.sfheading}>Sort and Filter</div>
 
-                <Grid
-                  container
-                  direction='column'
-                  justify='center'
-                  alignItems='center'
-                  style={{ padding: "0rem 1rem" }}
-                >
-                  <Grid container direction='column' style={{ width: "80%" }}>
-                    <Grid item style={classes.field}>
-                      <TextField
-                        fullWidth
-                        name='sortChoice'
-                        select
-                        label='Sort By'
-                        value={this.state.sortChoice}
-                        onChange={this.handleChange}
-                      >
-                        <MenuItem key='salary' value='salary'>
-                          Salary
-                        </MenuItem>
-                        <MenuItem key='rating' value='rating'>
-                          Rating
-                        </MenuItem>
-                        <MenuItem key='duration' value='duration'>
-                          Duration
-                        </MenuItem>
-                      </TextField>
-                    </Grid>
-                    <Grid item style={classes.field}>
-                      <TextField
-                        fullWidth
-                        name='order'
-                        select
-                        label='Order'
-                        value={this.state.order}
-                        onChange={this.handleChange}
-                      >
-                        <MenuItem key='ascending' value='1'>
-                          Ascending
-                        </MenuItem>
-                        <MenuItem key='descending' value='-1'>
-                          Descending
-                        </MenuItem>
-                      </TextField>
-                    </Grid>
-                    {this.displayFilters()}
-                  </Grid>
-                </Grid>
-              </Paper>
-            </Grid>
-            <Grid item xs={9}>
-              <Grid container direction='column'>
-                <Paper
-                  elevation={0}
-                  style={{
-                    padding: "0rem 0rem 2rem",
-                    background: "transparent",
-                  }}
-                >
-                  <Grid item xs={5} style={{ marginLeft: "2rem" }}>
-                    <SearchBar
-                      name='search'
-                      label='Search Jobs'
-                      value={this.state.search}
-                      inputProps={{ autoComplete: "off" }}
-                      closeIcon={<SearchIcon style={{ color: "grey" }} />}
-                      onChange={(newValue) =>
-                        this.setState({ searchValue: newValue })
-                      }
-                      onCancelSearch={() =>
-                        this.setState({ search: this.state.searchValue })
-                      }
-                      onRequestSearch={() =>
-                        this.setState({ search: this.state.searchValue })
-                      }
-                    />
-                  </Grid>
-                  <Grid
-                    container
-                    style={{
-                      marginTop: "1rem",
-                      paddingTop: "0rem",
-                      maxHeight: "60vh",
-                      overflowY: "auto",
-                    }}
-                  >
-                    {this.displayJobs()}
-                  </Grid>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Grid>
-          <Dialog
-            open={this.state.openDialog}
-            onClose={this.handleClose}
-            aria-labelledby='form-dialog-title'
-          >
-            <DialogTitle id='form-dialog-title'>
-              <span style={{ fontSize: "1.5rem", fontFamily: "'Rosario'" }}>
-                Statement of Purpose
-              </span>
-            </DialogTitle>
-            <DialogContent>
-              <TextField
-                style={{ minWidth: 500 }}
-                autoFocus
-                rows={3}
-                rowsMax={6}
-                required
-                margin='dense'
-                id='sop'
-                label='max 250 words'
-                type='text'
-                inputProps={{ maxLength: 250 }}
-                multiline
-                variant='outlined'
-                fullWidth
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => this.handleClose()} color='primary'>
-                Cancel
-              </Button>
-              <Button onClick={() => this.sendApplication()} color='primary'>
-                Add
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </Container>
-      );
-  }
-}
+//                 <Grid
+//                   container
+//                   direction='column'
+//                   justify='center'
+//                   alignItems='center'
+//                   style={{ padding: "0rem 1rem" }}
+//                 >
+//                   <Grid container direction='column' style={{ width: "80%" }}>
+//                     <Grid item style={classes.field}>
+//                       <TextField
+//                         fullWidth
+//                         name='sortChoice'
+//                         select
+//                         label='Sort By'
+//                         value={this.state.sortChoice}
+//                         onChange={this.handleChange}
+//                       >
+//                         <MenuItem key='salary' value='salary'>
+//                           Salary
+//                         </MenuItem>
+//                         <MenuItem key='rating' value='rating'>
+//                           Rating
+//                         </MenuItem>
+//                         <MenuItem key='duration' value='duration'>
+//                           Duration
+//                         </MenuItem>
+//                       </TextField>
+//                     </Grid>
+//                     <Grid item style={classes.field}>
+//                       <TextField
+//                         fullWidth
+//                         name='order'
+//                         select
+//                         label='Order'
+//                         value={this.state.order}
+//                         onChange={this.handleChange}
+//                       >
+//                         <MenuItem key='ascending' value='1'>
+//                           Ascending
+//                         </MenuItem>
+//                         <MenuItem key='descending' value='-1'>
+//                           Descending
+//                         </MenuItem>
+//                       </TextField>
+//                     </Grid>
+//                     {this.displayFilters()}
+//                   </Grid>
+//                 </Grid>
+//               </Paper>
+//             </Grid>
+//             <Grid item xs={9}>
+//               <Grid container direction='column'>
+//                 <Paper
+//                   elevation={0}
+//                   style={{
+//                     padding: "0rem 0rem 2rem",
+//                     background: "transparent",
+//                   }}
+//                 >
+//                   <Grid item xs={5} style={{ marginLeft: "2rem" }}>
+//                     <SearchBar
+//                       name='search'
+//                       label='Search Jobs'
+//                       value={this.state.search}
+//                       inputProps={{ autoComplete: "off" }}
+//                       closeIcon={<SearchIcon style={{ color: "grey" }} />}
+//                       onChange={(newValue) =>
+//                         this.setState({ searchValue: newValue })
+//                       }
+//                       onCancelSearch={() =>
+//                         this.setState({ search: this.state.searchValue })
+//                       }
+//                       onRequestSearch={() =>
+//                         this.setState({ search: this.state.searchValue })
+//                       }
+//                     />
+//                   </Grid>
+//                   <Grid
+//                     container
+//                     style={{
+//                       marginTop: "1rem",
+//                       paddingTop: "0rem",
+//                       maxHeight: "60vh",
+//                       overflowY: "auto",
+//                     }}
+//                   >
+//                     {this.displayJobs()}
+//                   </Grid>
+//                 </Paper>
+//               </Grid>
+//             </Grid>
+//           </Grid>
+//           <Dialog
+//             open={this.state.openDialog}
+//             onClose={this.handleClose}
+//             aria-labelledby='form-dialog-title'
+//           >
+//             <DialogTitle id='form-dialog-title'>
+//               <span style={{ fontSize: "1.5rem", fontFamily: "'Rosario'" }}>
+//                 Statement of Purpose
+//               </span>
+//             </DialogTitle>
+//             <DialogContent>
+//               <TextField
+//                 style={{ minWidth: 500 }}
+//                 autoFocus
+//                 rows={3}
+//                 rowsMax={6}
+//                 required
+//                 margin='dense'
+//                 id='sop'
+//                 label='max 250 words'
+//                 type='text'
+//                 inputProps={{ maxLength: 250 }}
+//                 multiline
+//                 variant='outlined'
+//                 fullWidth
+//               />
+//             </DialogContent>
+//             <DialogActions>
+//               <Button onClick={() => this.handleClose()} color='primary'>
+//                 Cancel
+//               </Button>
+//               <Button onClick={() => this.sendApplication()} color='primary'>
+//                 Add
+//               </Button>
+//             </DialogActions>
+//           </Dialog>
+//         </Container>
+//       );
+//   }
+// }
 
-export default ViewJobs;
+// export default ViewJobs;
