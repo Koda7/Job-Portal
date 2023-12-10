@@ -322,175 +322,360 @@ class ShowJobs extends React.Component {
           "dddd, mmmm dS, yyyy"
         );
         return (
-            <Grid item xs={12} key={index}>
-              <Grid
-                container
+          <Grid item xs={12} key={index}>
+            <Grid
+              container
+              style={{
+                height: "100%",
+                width: "100%",
+              }}
+            >
+              <Paper
+                elevation={3}
                 style={{
-                  height: "100%",
                   width: "100%",
+                  paddingLeft: "1rem",
                 }}
               >
-                <Paper
-                  elevation={3}
+                <Grid
+                  container
                   style={{
                     width: "100%",
-                    paddingLeft: "1rem",
+                    paddingTop: "1rem",
+                    paddingLeft: "2rem",
+                    paddingBottom: "1rem",
+                  }}
+                  justify='space-around'
+                >
+                  <Grid item xs={6}>
+                    <Grid
+                      container
+                      direction='column'
+                      style={{
+                        width: "100%",
+                      }}
+                      spacing={1}
+                    >
+                      <Grid
+                        item
+                        xs={10}
+                        style={{
+                          fontFamily: "'Baloo Thambi 2', curisve",
+                          color: statusColor,
+                        }}
+                      >
+                        {applicant.status}
+                      </Grid>
+                      <Grid item xs={10}>
+                        <div style={classes.applicantTitle}>
+                          {this.titleCase(applicant.name)}
+                        </div>{" "}
+                        <div style={classes.applicantRating}>
+                          <Rating
+                            name={applicant.userId}
+                            defaultValue={applicant.rating}
+                            precision={0.5}
+                            readOnly
+                          />
+                        </div>
+                      </Grid>
+                      <Grid item xs={10}>
+                        {applicant.skills.length === 0 ? (
+                          <Chip
+                            key={index}
+                            label='No Skills Given'
+                            clickable
+                            color='primary'
+                            style={{ fontSize: 10 }}
+                          />
+                        ) : (
+                          applicant.skills.map((skill, index) => (
+                            <Chip
+                              key={index}
+                              label={skill.skillName}
+                              clickable
+                              color='primary'
+                              style={{ fontSize: 10 }}
+                            />
+                          ))
+                        )}
+                      </Grid>
+
+                      <Grid item xs={10}>
+                        <InputLabel
+                          style={{
+                            fontFamily: "'Baloo Thambi 2', curisve",
+                            fontSize: "1.2rem",
+                          }}
+                        >
+                          Education
+                          <ul style={{ margin: "0rem", paddingLeft: "1rem" }}>
+                            {applicant.education.length === 0 ? (
+                              <li style={{ margin: "0.5rem" }}>
+                                No instance given
+                              </li>
+                            ) : (
+                              applicant.education.map((instance, index) => {
+                                let secondPart = "Present";
+                                if (instance.endYear !== 0)
+                                  secondPart = instance.endYear;
+                                return (
+                                  <li key={index} style={{ margin: "0.5rem" }}>
+                                    {this.titleCase(instance.instituteName)}{" "}
+                                    {`(${instance.startYear}-${secondPart})`}
+                                  </li>
+                                );
+                              })
+                            )}
+                          </ul>
+                        </InputLabel>
+                      </Grid>
+                      <Grid item xs={9}>
+                        <InputLabel
+                          style={{ display: "inline", fontWeight: "bold" }}
+                        >
+                          SOP: {"   "}
+                        </InputLabel>
+                        <span style={{ fontFamily: "'Work Sans'" }}>
+                          {applicant.SOP}
+                        </span>
+                      </Grid>
+                      <Grid item xs={10}>
+                        <InputLabel
+                          style={{
+                            fontSize: "1rem",
+                            marginTop: "0.5rem",
+                          }}
+                        >
+                          <FcCalendar /> {formattedApplicationDate}
+                        </InputLabel>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Grid
+                      container
+                      alignContent='center'
+                      justify='center'
+                      alignItems='center'
+                      style={{ height: "100%" }}
+                    >
+                      {this.displayButtons(applicant.userId)}
+                      <Button
+                        style={{
+                          margin: "1rem",
+                          padding: "0.7rem",
+                          color: "#1464F4	",
+                          border: "3px  solid #1D7CF2",
+                          borderRadius: 0,
+                          width: 200,
+                          backgroundColor: "#FFF",
+                          maxWdith: "100%",
+                        }}
+                        component='label'
+                        disabled={applicant.resumePath === ""}
+                        onClick={() =>
+                          this.downloadFile(
+                            applicant.userId + applicant.resumePath,
+                            applicant.resumePath
+                          )
+                        }
+                      >
+                        {applicant.resumePath === ""
+                          ? "No Resume"
+                          : "Download Resume"}
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Grid>
+          </Grid>
+        );
+      });
+  }
+
+  rejectLeft() {
+    let newApplications = this.state.applicants;
+    newApplications.forEach((application, index) => {
+      if (application.status !== "Accepted") {
+        application.status = "Rejected";
+        this.setStatus("Rejected", index);
+      }
+      return application;
+    });
+    this.setState({ applicants: newApplications });
+  }
+
+  render() {
+    if (!this.state.gotResponse)
+      return <h1 style={classes.heading}>Loading..</h1>;
+    else if (this.state.applicants.length === 0) {
+      return (
+        <Container>
+          <Button
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 90,
+              background: "transparent",
+              fontSize: "1.2rem",
+            }}
+            onClick={this.props.back}
+            variant='contained'
+          >
+            Back
+          </Button>
+          <Grid
+            container
+            align='center'
+            justify='center'
+            style={{ marginTop: "5rem", height: "100%" }}
+            alignItems='center'
+          >
+            <Grid item xs={12}>
+              <FcDocument style={{ fontSize: "10rem", display: "block" }} />
+            </Grid>
+            <Grid item xs={12}>
+              <h1
+                style={{
+                  fontFamily: "'Baloo Thambi 2'",
+                  fontSize: "3.5rem",
+                  fontWeight: 100,
+                  margin: "0rem",
+                }}
+              >
+                No Applications Yet
+              </h1>
+            </Grid>
+          </Grid>
+        </Container>
+      );
+    } else
+      return (
+        <Container
+          style={{
+            width: "100vw",
+            padding: 0,
+            maxWidth: 1400,
+            paddingTop: "3rem",
+          }}
+        >
+          <Button
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 90,
+              background: "transparent",
+              fontSize: "1.2rem",
+            }}
+            onClick={this.props.back}
+            variant='contained'
+          >
+            Back
+          </Button>
+          <h1 style={classes.heading}>Applicants</h1>
+          <Grid
+            container
+            spacing={3}
+            justify='flex-end'
+            style={{ marginTop: "2rem" }}
+          >
+            <Grid item xs={3}>
+              <Paper elevation={3} style={{ padding: "0rem" }}>
+                <div style={classes.sfheading}>Sort and Filter</div>
+
+                <Grid
+                  container
+                  direction='column'
+                  justify='center'
+                  alignItems='center'
+                  style={{ padding: "0rem 1rem" }}
+                >
+                  <Grid
+                    container
+                    direction='column'
+                    style={{ width: "80%", paddingBottom: "2rem" }}
+                  >
+                    <Grid item style={classes.field}>
+                      <TextField
+                        fullWidth
+                        name='sortChoice'
+                        select
+                        label='Sort By'
+                        value={this.state.sortChoice}
+                        onChange={this.handleChange}
+                      >
+                        <MenuItem key='name' value='name'>
+                          Name
+                        </MenuItem>
+                        <MenuItem
+                          key='dateOfApplication'
+                          value='rdateOfApplication'
+                        >
+                          Application Date
+                        </MenuItem>
+                        <MenuItem key='rating' value='rating'>
+                          Rating
+                        </MenuItem>
+                      </TextField>
+                    </Grid>
+                    <Grid item style={classes.field}>
+                      <TextField
+                        fullWidth
+                        name='order'
+                        select
+                        label='Order'
+                        value={this.state.order}
+                        onChange={this.handleChange}
+                      >
+                        <MenuItem key='ascending' value='1'>
+                          Ascending
+                        </MenuItem>
+                        <MenuItem key='descending' value='-1'>
+                          Descending
+                        </MenuItem>
+                      </TextField>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Grid>
+            <Grid item xs={9}>
+              <Paper
+                elevation={0}
+                style={{
+                  padding: "0rem 1rem",
+                  background: "transparent",
+                }}
+              >
+                <div style={classes.sfheading}>
+                  Positions Left: {this.state.leftPositions}
+                </div>
+                <div
+                  style={{
+                    maxHeight: "60vh",
+                    overflowY: "auto",
+                    width: "100%",
                   }}
                 >
                   <Grid
                     container
                     style={{
+                      paddingTop: "0rem",
                       width: "100%",
-                      paddingTop: "1rem",
-                      paddingLeft: "2rem",
-                      paddingBottom: "1rem",
                     }}
-                    justify='space-around'
+                    spacing={1}
                   >
-                    <Grid item xs={6}>
-                      <Grid
-                        container
-                        direction='column'
-                        style={{
-                          width: "100%",
-                        }}
-                        spacing={1}
-                      >
-                        <Grid
-                          item
-                          xs={10}
-                          style={{
-                            fontFamily: "'Baloo Thambi 2', curisve",
-                            color: statusColor,
-                          }}
-                        >
-                          {applicant.status}
-                        </Grid>
-                        <Grid item xs={10}>
-                          <div style={classes.applicantTitle}>
-                            {this.titleCase(applicant.name)}
-                          </div>{" "}
-                          <div style={classes.applicantRating}>
-                            <Rating
-                              name={applicant.userId}
-                              defaultValue={applicant.rating}
-                              precision={0.5}
-                              readOnly
-                            />
-                          </div>
-                        </Grid>
-                        <Grid item xs={10}>
-                          {applicant.skills.length === 0 ? (
-                            <Chip
-                              key={index}
-                              label='No Skills Given'
-                              clickable
-                              color='primary'
-                              style={{ fontSize: 10 }}
-                            />
-                          ) : (
-                            applicant.skills.map((skill, index) => (
-                              <Chip
-                                key={index}
-                                label={skill.skillName}
-                                clickable
-                                color='primary'
-                                style={{ fontSize: 10 }}
-                              />
-                            ))
-                          )}
-                        </Grid>
-  
-                        <Grid item xs={10}>
-                          <InputLabel
-                            style={{
-                              fontFamily: "'Baloo Thambi 2', curisve",
-                              fontSize: "1.2rem",
-                            }}
-                          >
-                            Education
-                            <ul style={{ margin: "0rem", paddingLeft: "1rem" }}>
-                              {applicant.education.length === 0 ? (
-                                <li style={{ margin: "0.5rem" }}>
-                                  No instance given
-                                </li>
-                              ) : (
-                                applicant.education.map((instance, index) => {
-                                  let secondPart = "Present";
-                                  if (instance.endYear !== 0)
-                                    secondPart = instance.endYear;
-                                  return (
-                                    <li key={index} style={{ margin: "0.5rem" }}>
-                                      {this.titleCase(instance.instituteName)}{" "}
-                                      {`(${instance.startYear}-${secondPart})`}
-                                    </li>
-                                  );
-                                })
-                              )}
-                            </ul>
-                          </InputLabel>
-                        </Grid>
-                        <Grid item xs={9}>
-                          <InputLabel
-                            style={{ display: "inline", fontWeight: "bold" }}
-                          >
-                            SOP: {"   "}
-                          </InputLabel>
-                          <span style={{ fontFamily: "'Work Sans'" }}>
-                            {applicant.SOP}
-                          </span>
-                        </Grid>
-                        <Grid item xs={10}>
-                          <InputLabel
-                            style={{
-                              fontSize: "1rem",
-                              marginTop: "0.5rem",
-                            }}
-                          >
-                            <FcCalendar /> {formattedApplicationDate}
-                          </InputLabel>
-                        </Grid>
-                      </Grid>
-                    </Grid>
-                    <Grid item xs={4}>
-                      <Grid
-                        container
-                        alignContent='center'
-                        justify='center'
-                        alignItems='center'
-                        style={{ height: "100%" }}
-                      >
-                        {this.displayButtons(applicant.userId)}
-                        <Button
-                          style={{
-                            margin: "1rem",
-                            padding: "0.7rem",
-                            color: "#1464F4	",
-                            border: "3px  solid #1D7CF2",
-                            borderRadius: 0,
-                            width: 200,
-                            backgroundColor: "#FFF",
-                            maxWdith: "100%",
-                          }}
-                          component='label'
-                          disabled={applicant.resumePath === ""}
-                          onClick={() =>
-                            this.downloadFile(
-                              applicant.userId + applicant.resumePath,
-                              applicant.resumePath
-                            )
-                          }
-                        >
-                          {applicant.resumePath === ""
-                            ? "No Resume"
-                            : "Download Resume"}
-                        </Button>
-                      </Grid>
-                    </Grid>
+                    {this.displayApplicants()}
                   </Grid>
-                </Paper>
-              </Grid>
+                </div>
+              </Paper>
             </Grid>
-          );
-        });
-    }
+          </Grid>
+        </Container>
+      );
+  }
+}
+
+export default ShowJobs;
